@@ -1,0 +1,11 @@
+# project out
+/build
+/bin
+/obj
+/out
+
+
+/.eide*
+/.vscode
+/tools
+/LED.code-workspace
