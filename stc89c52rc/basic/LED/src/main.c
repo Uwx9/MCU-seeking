@@ -5,37 +5,28 @@
 
 #include <reg52.h>
 #include <stdio.h>
-#include <LED.h>
-
-/* led从两边到中间依次亮
- *
-// void main(void)
-// {
-//     while (1) {
-// 		P00 = P07 = 1;
-// 		delay_100ms();
-// 		delay_100ms();
-// 		P00 = P07 = 0;
-		
-// 		P01 = P06 = 1;
-// 		delay_100ms();
-// 		delay_100ms();
-// 		P01 = P06 = 0;
-		
-// 		P02 = P05 = 1;
-// 		delay_100ms();
-// 		delay_100ms();
-// 		P02 = P05 = 0;
-		
-// 		P03 = P04 = 1;
-// 		delay_100ms();
-// 		delay_100ms();
-// 		P03 = P04 = 0;
-// 	}
-// }
- */
+#include "LED.h"
+#include "delay.h"
+#include "interrupt.h"
+#include "port.h"
 
 void main(void)
 {
-	LED_breath_by_P0();
+	intr_open_int0(0, 1);	// 低电平有效, 高优先级
+	P0_set0();
+	while (1);
+}
+
+int a = 0;
+void INT0_FUNC(void) interrupt 0 using 1	// INT0的中断源为0 使用寄存器组1保存快照
+{
+	delay_ms(25);
+	if (a == 0) {
+		P0_set1();
+		a++;
+	}
+	else {
+		P0_set0();
+		a = 0;
+	} 
 }

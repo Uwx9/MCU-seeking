@@ -1,16 +1,8 @@
 #include <reg52.h>
 #include "delay.h"
+#include "port.h"
 
-void P0_set1()
-{
-	P00 = P01 = P02 = P03 = P04 = P05 = P06 = P07 = 1;
-}
-
-void P0_set0()
-{
-	P00 = P01 = P02 = P03 = P04 = P05 = P06 = P07 = 0;
-}
-
+/* LED 呼吸灯 */
 void LED_breath_by_P0(void)
 {
 	int T = 0, Toff = 500;
@@ -32,3 +24,6 @@ void LED_breath_by_P0(void)
 		delay_100ms();
 	}
 }
+
+
+
