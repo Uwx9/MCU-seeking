@@ -11,3 +11,16 @@ int intr_open_int0(char IT0_, char PX0_)
 	PX0 = PX0_;	// 高优先级或低优先级
 	return 0;
 }
+
+/* 打开中断INT1, 成功返回0, 失败返回-1 */
+int intr_open_int1(char IT1_, char PX1_)
+{
+	if (IT1_ != 0 && IT1_ != 1) return -1;
+	if (PX1_ != 0 && PX1_ != 1) return -1;
+	IT1 = IT1_;	// 选择低电平或下降沿输入有效
+	EA = 1;		// 开中断总闸
+	EX1 = 1;	// 允许INT1中断
+	PX1 = PX1_;	// 高优先级或低优先级
+	P0 = 0;
+	return 0;
+}

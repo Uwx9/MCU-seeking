@@ -1,4 +1,6 @@
 #include <stdint.h>
+#define _nop_() __asm nop __endasm
+
 void delay_100ms(void) //@12MHz
 {
     unsigned char i, j;
@@ -13,17 +15,21 @@ void delay_100ms(void) //@12MHz
     } while (--i);
 }
 
-void delay_ms(uint16_t ms) {
-    uint16_t i, j;
-    
-    for(i = 0; i < ms; i++) {
-        // 外层：毫秒循环
-        j = 920;  // 内层循环次数
-        while(j--) {
-            // 空循环体，依靠循环开销延时
-        }
-    }
+void Delay1ms(uint32_t ms)	//@11.0592MHz
+{
+	while (ms--) {
+		unsigned char i, j;
+
+		_nop_();
+		i = 2;
+		j = 199;
+		do
+		{
+			while (--j);
+		} while (--i);
+	}
 }
+
 void delay(unsigned int t)
 {
 	while (t--);
