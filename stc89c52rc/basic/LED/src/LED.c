@@ -1,6 +1,5 @@
 #include <reg52.h>
 #include "delay.h"
-#include "port.h"
 
 /* LED 呼吸灯 */
 void LED_breath_by_P0(void)

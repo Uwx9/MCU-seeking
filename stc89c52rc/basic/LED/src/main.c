@@ -20,11 +20,11 @@ void INT0_FUNC(void) interrupt 0 using 1	// INT0的中断源为0 使用寄存器
 {
 	Delay1ms(20);
 	if (a == 0) {
-		P0_set1();
+		P0 = 0xff;
 		a++;
 	}
 	else {
-		P0_set0();
+		P0 = 0;
 		a = 0;
 	} 
 	Delay1ms(20);
