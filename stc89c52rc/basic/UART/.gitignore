@@ -13,8 +13,8 @@
 # eide template
 *.ept
 *.eide-template
-
-/tools
-/.vscode
-/.eide
 /*workspace
+/.eide
+/.vscode
+/tools
+
