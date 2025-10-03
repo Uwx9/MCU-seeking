@@ -1,4 +1,4 @@
-#include <reg52.h>
+#include <REG52.H>
 #include <stdint.h>
 
 int T0_open_method1(uint8_t GATE_, uint8_t CT_)
@@ -7,16 +7,17 @@ int T0_open_method1(uint8_t GATE_, uint8_t CT_)
 	if (GATE_ != 0 && GATE_ != 1) return -1;
 	if (CT_ != 0 && CT_ != 1) return -1;
 	
-	uint8_t TMOD_bit_2_3 = GATE_ << 3 | CT_ << 2;
-	TMOD = TMOD_bit_2_3 | 1;
+	TMOD &= 0xf0;
+	TMOD |= (GATE_ << 3 | CT_ << 2) | 0x01;
 
 	// 设置TCON
 	TR0 = 1;
+	TF0 = 0;
 
 	// 设置IE和IP, 即中断开关和优先级
 	EA = 1;
 	ET0 = 1;
-	PT0 = 1;
+	PT0 = 0;
 	
 	return 0;
 }
@@ -27,11 +28,12 @@ int T1_open_method1(uint8_t GATE_, uint8_t CT_)
 	if (GATE_ != 0 && GATE_ != 1) return -1;
 	if (CT_ != 0 && CT_ != 1) return -1;
 	
-	uint8_t TMOD_bit_6_7 = GATE_ << 7 | CT_ << 6;
-	TMOD = TMOD_bit_6_7 | 1;
+	TMOD &= 0x0f;
+	TMOD |=  (GATE_ << 7 | CT_ << 6) | 0x10;
 
 	// 设置TCON
 	TR1 = 1;
+	TF1 = 0;
 
 	// 设置IE和IP, 即中断开关和优先级
 	EA = 1;
@@ -62,6 +64,5 @@ int intr_open_int1(char IT1_, char PX1_)
 	EA = 1;		// 开中断总闸
 	EX1 = 1;	// 允许INT1中断
 	PX1 = PX1_;	// 高优先级或低优先级
-	P0 = 0;
 	return 0;
 }
