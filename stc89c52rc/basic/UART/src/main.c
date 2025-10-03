@@ -5,6 +5,7 @@
 
 #include <reg52.h>
 #include <stdio.h>
+#include <INTRINS.H>
 
 void delay_100ms(void) //@12MHz
 {
