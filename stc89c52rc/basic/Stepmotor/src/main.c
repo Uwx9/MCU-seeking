@@ -24,10 +24,10 @@ void main(void)
 		if (key_num == 1) {
 			speed++;
 			speed %= 4;
-			// if (speed == 0) percent = 0;
-			// else if (speed == 1) percent = 20;
-			// else if (speed == 2) percent = 50;
-			// else if (speed == 3) percent = 100;
+			if (speed == 0) percent = 0;
+			else if (speed == 1) percent = 60;
+			else if (speed == 2) percent = 80;
+			else if (speed == 3) percent = 100;
 		}
 		Nixie(1, speed);
 	}
