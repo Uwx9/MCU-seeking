@@ -1,5 +1,7 @@
 #include "REGX52.H"
 
+unsigned char char_buf[100];
+
 /**
   * @brief  串口初始化, 方式1
   * @param  无
@@ -27,10 +29,17 @@ void UART_send_byte(unsigned char Byte)
 	TI = 0;
 }
 
+int i = 0;
 void INT_FUNC_UART() interrupt 4
 {
 	if (RI == 1) {
-		UART_send_byte(SBUF);
+		/* 这里不能直接发回一个字节, 这样中断例程会时间过长, 
+		 * 当接收到下一个到来的字节产生新的中断时, 
+		 * 当前中断因为要发送字节可能还没有结束, 新的中断被拒绝了?
+		 */
+		// UART_send_byte(SBUF);
+		if (i < 100)
+			char_buf[i++] = SBUF;
 		P2 = SBUF;
 		RI = 0;
 	}
