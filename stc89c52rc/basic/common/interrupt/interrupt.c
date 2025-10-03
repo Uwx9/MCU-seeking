@@ -64,5 +64,6 @@ int intr_open_int1(char IT1_, char PX1_)
 	EA = 1;		// 开中断总闸
 	EX1 = 1;	// 允许INT1中断
 	PX1 = PX1_;	// 高优先级或低优先级
+	P0 = 0;
 	return 0;
 }
