@@ -1,5 +1,5 @@
 #include <stdint.h>
-#define _nop_() __asm nop __endasm
+#include <INTRINS.H>
 
 void delay_100ms(void) //@12MHz
 {

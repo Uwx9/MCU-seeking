@@ -1,8 +1,11 @@
-#include <reg52.h>
+#include <REGX52.H>
+#include "key.h"
 #include "interrupt.h"
 #include "delay.h"
+#include "nixie.h"
 
 int count = 0, percent = 0;
+unsigned char key_num = 0, speed = 0;
 
 
 void main(void)
@@ -16,17 +19,17 @@ void main(void)
 	TH0 = 0xff;
 	TL0 = 0x9c;
 
-	int speed = 0;
 	while (1) {			
-		if (P31 == 0) {
-			while (P31 == 0);
+		key_num = Key();
+		if (key_num == 1) {
 			speed++;
 			speed %= 4;
-			if (speed == 0) percent = 0;
-			else if (speed == 1) percent = 20;
-			else if (speed == 2) percent = 50;
-			else if (speed == 3) percent = 100;
+			// if (speed == 0) percent = 0;
+			// else if (speed == 1) percent = 20;
+			// else if (speed == 2) percent = 50;
+			// else if (speed == 3) percent = 100;
 		}
+		Nixie(1, speed);
 	}
 }
 
@@ -39,10 +42,10 @@ void INT_T0_FUNC() interrupt 1
 	count++;
 	count %= 100;
 	if (count < percent) {
-		P10 = 1;
+		P1_0 = 1;
 	}
 	else {
-		P10 = 0;
+		P1_0 = 0;
 	}
 
 }
