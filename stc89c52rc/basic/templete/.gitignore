@@ -13,9 +13,7 @@
 # eide template
 *.ept
 *.eide-template
+/*workspace
+/tools
 /.vscode
 /.eide
-/tools
-.clang-format
-/tools
-*workspace
