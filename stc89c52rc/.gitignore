@@ -1,6 +1,6 @@
-*/.eide/
-*/.vscode/
-*/build/
-*/tools/
-*/*workspace*/
-*/.clang-format
+*/*/.eide/
+*/*/.vscode/
+*/*/build/
+*/*/tools/
+*/*/*workspace
+*/*/.clang-format
