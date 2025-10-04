@@ -1,4 +1,5 @@
 #include "REGX52.H"
+#include "stdint.h"
 
 unsigned char char_buf[100];
 
@@ -22,11 +23,30 @@ void UART_init()
 	ES = 1;				// 串口中断开关
 }
 
+/**
+  * @brief  串口发送一个字节
+  * @param  一个字节值
+  * @retval 无
+  */
 void UART_send_byte(unsigned char Byte)
 {
 	SBUF = Byte;
 	while (TI == 0);
 	TI = 0;
+}
+
+/**
+  * @brief  串口发送字符串
+  * @param  字符串地址
+  * @retval 无
+  */
+void UART_send_string(unsigned char* sendstr)
+{
+	uint8_t i = 0;
+	while (sendstr[i] != '\0') {
+		UART_send_byte(sendstr[i]);
+		i++;
+	}
 }
 
 int i = 0;
@@ -38,7 +58,7 @@ void INT_FUNC_UART() interrupt 4
 		 * 当前中断因为要发送字节可能还没有结束, 新的中断被拒绝了?
 		 */
 		// UART_send_byte(SBUF);
-		if (i < 100)
+		if (i < 99)
 			char_buf[i++] = SBUF;
 		P2 = SBUF;
 		RI = 0;

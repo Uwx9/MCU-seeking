@@ -3,8 +3,9 @@
 #include "UART.h"
 #include "delay.h"
 
-int j = 0;
 extern unsigned char char_buf[100];
+extern int i;
+
 void main()
 {
 	UART_init();
@@ -13,8 +14,8 @@ void main()
 			Delay1ms(20);
 			while (P3_1 == 0);
 			Delay1ms(20);
-			UART_send_byte(char_buf[j++]);
-			UART_send_byte(char_buf[j++]);
+			char_buf[i] = '\0';
+			UART_send_string(char_buf);
 		}
 	}
 }
