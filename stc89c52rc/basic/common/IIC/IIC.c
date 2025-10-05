@@ -1,7 +1,9 @@
 #include "REGX52.H"
 #include "INTRINS.H"
+
 #define nop() _nop_()
-#define IIC_TARGET_EEPROM
+// #define IIC_TARGET_OLED
+// #define IIC_TARGET_EEPROM
 
 #if defined (IIC_TARGET_EEPROM)
 	sbit EEPROM_SDA = P2^0;
