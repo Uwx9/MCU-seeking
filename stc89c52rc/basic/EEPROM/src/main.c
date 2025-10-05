@@ -1,6 +1,6 @@
 #include "REG52.H"
 #include "INTRINS.H"
-#include "IIC.h"
+#include "IIC_EEPROM.h"
 #include "delay.h"
 #define nop() _nop_()
 
