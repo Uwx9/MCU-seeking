@@ -17,3 +17,6 @@
 /tools
 /.vscode
 /.eide
+/*.uvgui.*
+/*.uvopt*
+/*.uvproj*

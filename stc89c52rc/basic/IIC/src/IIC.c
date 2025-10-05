@@ -2,10 +2,9 @@
 #include "INTRINS.H"
 #define nop() _nop_()
 
-sbit SDA = P2^1;
-sbit SCL = P2^0;
+sbit SDA = P2^0;
+sbit SCL = P2^1;
 bit ack;	// ack为0表示无应答, 为1表示有应答
-
 /* 以下Start 12C为开始信号发送函数,用于发送开始信号。
  * 该函数执行时,先让sCL, SDA都为高电平,
  * 然后在保持SCL为高电平时让SDA变为低电平,
@@ -63,12 +62,8 @@ static void IIC_send_byte(unsigned char sdata)
 {
 	unsigned char bit_idx;
 	for (bit_idx = 0; bit_idx < 8; bit_idx++) {
-		if ((sdata << bit_idx) & 0x80) {	// 从高位依次比较
-			// 此为发送1的情况
-			SDA = 1;
-		} else {
-			SDA = 0;
-		}
+		SDA = (sdata & 0x80) ? 1 : 0;	// 从高位依次比较
+		sdata <<= 1;
 		nop();
 		
 		SCL = 1;	// 准备接收数据
@@ -175,11 +170,15 @@ int IIC_write_byte_no_addr(unsigned char sladr, unsigned char sdata)
 {
 	IIC_start();
 	IIC_send_byte(sladr);	// 发送7位从机地址和一位读写位
-	if (ack == 0)	// 无应答
+	if (ack == 0) {// 无应答
+		IIC_stop();
 		return -1;
+	}
 	IIC_send_byte(sdata);
-	if (ack == 0)
+	if (ack == 0) {
+		IIC_stop();
 		return -1;
+	}
 	IIC_stop();
 	return 0;	
 }
@@ -194,16 +193,22 @@ int IIC_write_str_with_addr(unsigned char sladr, unsigned char subaddr, unsigned
 	unsigned char i;
 	IIC_start();
 	IIC_send_byte(sladr);
-	if (ack == 0)
+	if (ack == 0) {
+		IIC_stop();
 		return -1;
+	}
 	IIC_send_byte(subaddr);
-	if (ack == 0)
+	if (ack == 0) {
+		IIC_stop();
 		return -1;
+	}
 
 	for (i = 0; i < cnt; i++) {
 		IIC_send_byte(sendstr[i]);
-		if (ack == 0) 
+		if (ack == 0) {
+			IIC_stop();
 			return -1;
+		}
 	}
 	IIC_stop();
 	return 0;
@@ -218,8 +223,10 @@ int IIC_read_byte(unsigned char sladr, unsigned char* rdata)
 {
 	IIC_start();
 	IIC_send_byte(sladr | 0x01);
-	if (ack == 0) 
+	if (ack == 0) {
+		IIC_stop();
 		return -1;
+	}
 	*rdata = IIC_receive_byte();
 	IIC_NOACK();
 	IIC_stop();
@@ -235,19 +242,28 @@ int IIC_read_byte(unsigned char sladr, unsigned char* rdata)
 int IIC_read_str_with_addr(unsigned char sladr, unsigned char subaddr, unsigned char* readed_str, unsigned char cnt)
 {
 	unsigned char i;
+	if (cnt < 1) 
+		return -1;
+	
 	IIC_start();
 	IIC_send_byte(sladr);
-	if (ack == 0)
+	if (ack == 0) {
+		IIC_stop();
 		return -1;
+	}
 	IIC_send_byte(subaddr);
-	if (ack == 0)
+	if (ack == 0) {
+		IIC_stop();
 		return -1;
+	}
 
 	// 发送读信号准备读data
 	IIC_start();
 	IIC_send_byte(sladr | 0x01);
-	if (ack == 0)
+	if (ack == 0) {
+		IIC_stop();
 		return -1;
+	}
 	for (i = 0; i < cnt - 1; i++){
 		readed_str[i] = IIC_receive_byte();
 		IIC_ACK();
