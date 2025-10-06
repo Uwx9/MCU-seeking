@@ -1,8 +1,10 @@
 #include "REGX52.H"
 #include "INTRINS.H"
+#include "stdint.h"
 
 #define nop() _nop_()
-// #define IIC_TARGET_OLED
+#define IIC_TARGET_OLED
+#define IFNOACK() do { if (ack == 0) {IIC_stop(); return -1;} } while(0)
 // #define IIC_TARGET_EEPROM
 
 #if defined (IIC_TARGET_EEPROM)
@@ -175,12 +177,33 @@ static void IIC_NOACK()
 	nop();
 }
 
+// 真不能用数组, ram太少了, 就IIC挂载一个设备好了
+uint8_t IIC_dev_addr = 0;
+/**
+ * @brief  IIC设备扫描函数
+ */
+void IIC_dev_scan()
+{
+	uint8_t sladdr;
+	for (sladdr = 1; sladdr < 128; sladdr++) {
+		IIC_start();
+		IIC_send_byte(sladdr << 1);	// 给sladdr这里的设备发送写命令
+		if (ack == 0)
+			continue;
+		else 
+			IIC_dev_addr = sladdr;
+	}
+	IIC_stop();
+	nop();nop();nop();
+}
+
+
 /**
   * @brief  立即地址写操作是指不发送字节地址而是直接写上次操作地址N之后的地址N+1的数据
   * @param  从机地址,要发送的数据
   * @retval 成功返回0, 失败返回-1
   */
-int EEPROM_write_byte_no_addr(unsigned char sladr, unsigned char SDAta)
+int EEPROM_write_byte_no_addr(unsigned char sladr, unsigned char Sdata)
 {
 	IIC_start();
 	IIC_send_byte(sladr);	// 发送7位从机地址和一位读写位
@@ -188,7 +211,7 @@ int EEPROM_write_byte_no_addr(unsigned char sladr, unsigned char SDAta)
 		IIC_stop();
 		return -1;
 	}
-	IIC_send_byte(SDAta);
+	IIC_send_byte(Sdata);
 	if (ack == 0) {
 		IIC_stop();
 		return -1;
@@ -286,4 +309,168 @@ int EEPROM_read_str_with_addr(unsigned char sladr, unsigned char subaddr, unsign
 	IIC_NOACK();
 	IIC_stop();
 	return 0;
+}
+
+
+/****************** OLED驱动 ******************/
+
+/**
+ * @brief OLED写命令
+ */
+static int OLED_write_command(uint8_t command_)
+{
+	IIC_start();
+	IIC_send_byte(0x3c << 1);	// 呼叫oled
+	IFNOACK();
+	IIC_send_byte(0x00);		// 发送control byte表示接下来我要发一个命令字节
+	IFNOACK();
+	IIC_send_byte(command_);		// 发送command
+	IFNOACK();
+	IIC_stop();
+	return 0;
+}
+
+/**
+ * @brief OLED写数据
+ */
+static int OLED_write_data(uint8_t data_)
+{
+	IIC_start();
+	IIC_send_byte(0x3c << 1);	// 呼叫oled
+	IFNOACK();
+	IIC_send_byte(0x40);		// 发送control byte表示接下来我要发一个数据字节
+	IFNOACK();
+	IIC_send_byte(data_);		// 发送data
+	IFNOACK();
+	IIC_stop();
+	return 0;
+}
+
+/**
+ * @brief OLED_init
+ */
+void OLED_init()
+{
+    OLED_write_command(0xAE); // 关闭显示
+
+    OLED_write_command(0xD5); // 设置显示时钟分频/振荡频率
+    OLED_write_command(0x80); // 建议值
+
+    OLED_write_command(0xA8); // 设置多路复用比
+    OLED_write_command(0x3F); // 1/64
+
+    OLED_write_command(0xD3); // 设置显示偏移
+    OLED_write_command(0x00); // 无偏移
+
+    OLED_write_command(0x40); // 起始行=0
+
+    OLED_write_command(0x8D); // 充电泵设置
+    OLED_write_command(0x14); // 使能充电泵
+
+    OLED_write_command(0x20); // 寻址模式设置
+    OLED_write_command(0x02); // 页地址模式
+
+    OLED_write_command(0xA1); // 左右不颠倒, a0左右颠倒
+    OLED_write_command(0xC8); // 上下不颠倒, c0上下颠倒
+
+    OLED_write_command(0xDA); // COM 引脚硬件配置
+    OLED_write_command(0x12); // 默认值
+
+    OLED_write_command(0x81); // 对比度设置
+    OLED_write_command(0xCF); // 对比度值
+
+    OLED_write_command(0xD9); // 预充电周期
+    OLED_write_command(0xF1); // 设置值
+
+    OLED_write_command(0xDB); // VCOMH 电压
+    OLED_write_command(0x40); // 默认 0.77*Vcc
+
+    OLED_write_command(0xA4); // 恢复到 RAM 显示
+    OLED_write_command(0xA6); // 正常显示（非反相）
+    OLED_write_command(0xAF); // 开启显示
+}
+
+/**
+ * @brief 设置坐标, 即哪一页和哪一行
+ */
+static void OLED_set_cursor(uint8_t page, uint8_t column)
+{
+	if (page > 7 || column > 127) return;
+	OLED_write_command(0xb0 | page);			// 设置页号
+	OLED_write_command(0x10 | column >> 4);		// 设置行高4位
+	OLED_write_command(0x00 | (column & 0x0f));	// 设置行低4位
+}
+
+/**
+ * @brief 清屏
+ */
+void OLED_clear()
+{
+	uint8_t page, column;
+	for (page = 0; page < 8; page++) {
+		OLED_set_cursor(page, 0);
+		for (column = 0; column < 128; column++) {
+			OLED_write_data(0x00);
+		}
+	}
+}
+
+/**
+ * @brief 点亮一个字节
+ * @param 页号0~7
+ * @param 行号0~127
+ */
+void OLED_light_one_byte(uint8_t page, uint8_t column)
+{
+	if (page > 7 || column > 127) return;
+	OLED_set_cursor(page, column);
+	OLED_write_data(0xff);
+}
+
+/**
+ * @brief 显示一个16x16字符, 高度占两页宽度16列, 屏上可显示4(行)x8(列)个字符
+ * @param row4行中的一行0~3
+ * @param column8列中的一列0~7
+ */
+void OLED_show_char_16x16(uint8_t char_row, uint8_t char_column, unsigned char readychar[][16])
+{
+	uint8_t i, j;
+	uint8_t page = char_row, column = char_column;
+	if (char_row > 3 || char_column > 7) return;
+	
+	for (i = 0; i < 2; i++) {
+		OLED_set_cursor(page * 2 + i, column * 16);
+		for (j = 0; j < 16; j++) {
+			OLED_write_data(readychar[i][j]);
+		}
+	}
+
+}
+
+/**
+ * @brief 显示一个 像素8x16(列x行) ascill码, 高度占2页宽度8列, 屏上可显示4(行)x16(列)个字符
+ * @param row4行中的一行0~7
+ * @param column8列中的一列0~15
+ */
+void OLED_show_char_8x16(uint8_t char_row, uint8_t char_column, unsigned char ascill, const unsigned char code*  readychar)
+{
+	uint8_t ascill_id = (uint8_t)ascill - 'a';
+	uint8_t i, j;
+	if (char_row > 3 || char_column > 15) return;
+	
+	for (i = 0; i < 2; i++) {
+		OLED_set_cursor(char_row * 2 + i, char_column * 8);
+		for (j = 0; j < 8; j++) {
+			OLED_write_data(readychar[(ascill_id * 16) + (i * 8 + j)]);
+		}
+	}
+
+}
+/**
+ * @brief 显示图片
+ * @param 
+ */
+void OLED_show_image()
+{
+
 }

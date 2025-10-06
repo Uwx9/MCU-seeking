@@ -448,6 +448,25 @@ void OLED_show_char_16x16(uint8_t char_row, uint8_t char_column, unsigned char r
 }
 
 /**
+ * @brief 显示一个 像素8x16(列x行) ascill码, 高度占2页宽度8列, 屏上可显示4(行)x16(列)个字符
+ * @param row4行中的一行0~7
+ * @param column8列中的一列0~15
+ */
+void OLED_show_char_8x16(uint8_t char_row, uint8_t char_column, unsigned char ascill, const unsigned char code*  readychar)
+{
+	uint8_t ascill_id = (uint8_t)ascill - 'a';
+	uint8_t i, j;
+	if (char_row > 3 || char_column > 15) return;
+	
+	for (i = 0; i < 2; i++) {
+		OLED_set_cursor(char_row * 2 + i, char_column * 8);
+		for (j = 0; j < 8; j++) {
+			OLED_write_data(readychar[(ascill_id * 16) + (i * 8 + j)]);
+		}
+	}
+
+}
+/**
  * @brief 显示图片
  * @param 
  */

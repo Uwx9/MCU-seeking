@@ -13,4 +13,5 @@ void OLED_init();
 void OLED_clear();
 void OLED_light_one_byte(uint8_t page, uint8_t column);
 void OLED_show_char_16x16(uint8_t char_row, uint8_t char_column, unsigned char readychar[][16]);
+void OLED_show_char_8x16(uint8_t char_row, uint8_t char_column, unsigned char ascill, const unsigned char code*  readychar);
 #endif
