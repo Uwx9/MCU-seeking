@@ -4,6 +4,7 @@
 
 #define nop() _nop_()
 #define IIC_TARGET_OLED
+#define IFNOACK() do { if (ack == 0) {IIC_stop(); return -1;} } while(0)
 // #define IIC_TARGET_EEPROM
 
 #if defined (IIC_TARGET_EEPROM)
@@ -314,11 +315,143 @@ int EEPROM_read_str_with_addr(unsigned char sladr, unsigned char subaddr, unsign
 /****************** OLED驱动 ******************/
 
 /**
- * 
+ * @brief OLED写命令
  */
-// void OLED_write_command(uint8_t command)
-// {
-// 	IIC_start();
+static int OLED_write_command(uint8_t command_)
+{
+	IIC_start();
+	IIC_send_byte(0x3c << 1);	// 呼叫oled
+	IFNOACK();
+	IIC_send_byte(0x00);		// 发送control byte表示接下来我要发一个命令字节
+	IFNOACK();
+	IIC_send_byte(command_);		// 发送command
+	IFNOACK();
+	IIC_stop();
+	return 0;
+}
 
-// }
+/**
+ * @brief OLED写数据
+ */
+static int OLED_write_data(uint8_t data_)
+{
+	IIC_start();
+	IIC_send_byte(0x3c << 1);	// 呼叫oled
+	IFNOACK();
+	IIC_send_byte(0x40);		// 发送control byte表示接下来我要发一个数据字节
+	IFNOACK();
+	IIC_send_byte(data_);		// 发送data
+	IFNOACK();
+	IIC_stop();
+	return 0;
+}
 
+/**
+ * @brief OLED_init
+ */
+void OLED_init()
+{
+    OLED_write_command(0xAE); // 关闭显示
+
+    OLED_write_command(0xD5); // 设置显示时钟分频/振荡频率
+    OLED_write_command(0x80); // 建议值
+
+    OLED_write_command(0xA8); // 设置多路复用比
+    OLED_write_command(0x3F); // 1/64
+
+    OLED_write_command(0xD3); // 设置显示偏移
+    OLED_write_command(0x00); // 无偏移
+
+    OLED_write_command(0x40); // 起始行=0
+
+    OLED_write_command(0x8D); // 充电泵设置
+    OLED_write_command(0x14); // 使能充电泵
+
+    OLED_write_command(0x20); // 寻址模式设置
+    OLED_write_command(0x02); // 页地址模式
+
+    OLED_write_command(0xA1); // 左右不颠倒, a0左右颠倒
+    OLED_write_command(0xC8); // 上下不颠倒, c0上下颠倒
+
+    OLED_write_command(0xDA); // COM 引脚硬件配置
+    OLED_write_command(0x12); // 默认值
+
+    OLED_write_command(0x81); // 对比度设置
+    OLED_write_command(0xCF); // 对比度值
+
+    OLED_write_command(0xD9); // 预充电周期
+    OLED_write_command(0xF1); // 设置值
+
+    OLED_write_command(0xDB); // VCOMH 电压
+    OLED_write_command(0x40); // 默认 0.77*Vcc
+
+    OLED_write_command(0xA4); // 恢复到 RAM 显示
+    OLED_write_command(0xA6); // 正常显示（非反相）
+    OLED_write_command(0xAF); // 开启显示
+}
+
+/**
+ * @brief 设置坐标, 即哪一页和哪一行
+ */
+static void OLED_set_cursor(uint8_t page, uint8_t column)
+{
+	if (page > 7 || column > 127) return;
+	OLED_write_command(0xb0 | page);			// 设置页号
+	OLED_write_command(0x10 | column >> 4);		// 设置行高4位
+	OLED_write_command(0x00 | (column & 0x0f));	// 设置行低4位
+}
+
+/**
+ * @brief 清屏
+ */
+void OLED_clear()
+{
+	uint8_t page, column;
+	for (page = 0; page < 8; page++) {
+		OLED_set_cursor(page, 0);
+		for (column = 0; column < 128; column++) {
+			OLED_write_data(0x00);
+		}
+	}
+}
+
+/**
+ * @brief 点亮一个字节
+ * @param 页号0~7
+ * @param 行号0~127
+ */
+void OLED_light_one_byte(uint8_t page, uint8_t column)
+{
+	if (page > 7 || column > 127) return;
+	OLED_set_cursor(page, column);
+	OLED_write_data(0xff);
+}
+
+/**
+ * @brief 显示一个16x16字符, 高度占两页宽度16列, 屏上可显示4(行)x8(列)个字符
+ * @param row4行中的一行0~3
+ * @param column8列中的一列0~7
+ */
+void OLED_show_char(uint8_t char_row, uint8_t char_column, unsigned char readychar[][16])
+{
+	uint8_t i, j;
+	uint8_t page = char_row, column = char_column;
+	if (char_row > 3 || char_column > 7) return;
+	
+	for (i = 0; i < 2; i++) {
+		OLED_set_cursor(page * 2 + i, column * 16);
+		for (j = 0; j < 16; j++) {
+			OLED_write_data(readychar[i][j]);
+		}
+	}
+
+}
+
+/**
+ * @brief 显示图片
+ * @param 
+ */
+void OLED_show_image()
+{
+
+}
