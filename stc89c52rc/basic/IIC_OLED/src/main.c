@@ -18,7 +18,10 @@ void main()
 {
 	OLED_init();
 	OLED_clear();
-	OLED_show_char(0, 0, Hzk_ni);
-	OLED_show_char(1, 0, Hzk_hao);
+	OLED_show_char_16x16(0, 0, Hzk_ni);
+	OLED_show_char_16x16(1, 1, Hzk_hao);
+	OLED_show_char_16x16(2, 2, Hzk_ni);
+	OLED_show_char_16x16(3, 3, Hzk_hao);
+
 	while (1);
 }

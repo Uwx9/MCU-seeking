@@ -12,5 +12,5 @@ int EEPROM_read_str_with_addr(unsigned char sladr, unsigned char subaddr, unsign
 void OLED_init();
 void OLED_clear();
 void OLED_light_one_byte(uint8_t page, uint8_t column);
-void OLED_show_char(uint8_t char_row, uint8_t char_column, unsigned char readychar[][16]);
+void OLED_show_char_16x16(uint8_t char_row, uint8_t char_column, unsigned char readychar[][16]);
 #endif

@@ -432,7 +432,7 @@ void OLED_light_one_byte(uint8_t page, uint8_t column)
  * @param row4行中的一行0~3
  * @param column8列中的一列0~7
  */
-void OLED_show_char(uint8_t char_row, uint8_t char_column, unsigned char readychar[][16])
+void OLED_show_char_16x16(uint8_t char_row, uint8_t char_column, unsigned char readychar[][16])
 {
 	uint8_t i, j;
 	uint8_t page = char_row, column = char_column;
