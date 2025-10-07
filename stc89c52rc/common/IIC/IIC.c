@@ -466,6 +466,56 @@ void OLED_show_char_8x16(uint8_t char_row, uint8_t char_column, unsigned char as
 	}
 
 }
+
+/**
+ * @brief direction可指定滚动方向, 如 up: OLED_roll_up
+ */
+void OLED_roll(uint8_t direction)
+{
+	uint8_t direction_command;
+	if (direction != 0 && direction != 1 && direction != 2 && direction != 3) return;
+	if (direction == 0 || direction == 1) goto vertical;
+	if (direction == 2 || direction == 3) goto horizontal;
+	/*  水平滚动设置（九字节指令）*/
+
+horizontal:
+	if (direction == 2) direction_command = 0x27;
+	else direction_command = 0x26;
+    OLED_write_command(0x2E);    //先停止滚动,待配置好后再开始滚动
+    OLED_write_command(direction_command);    //水平向左(0x27)/向右(0x26)滚动
+    OLED_write_command(0x00);    //dummy byte(空比特、虚拟字节),暂未发现其指令作用
+    
+    OLED_write_command(0x00);    //设置滚动起始页地址
+    OLED_write_command(0x05);    //设置滚动速度(0x00~0x07数值越小速度越慢)
+    OLED_write_command(0x07);    //设置滚动结束页        
+    
+    OLED_write_command(0x00);    //dummy byte(空比特、虚拟字节)
+
+    OLED_write_command(0x7F);	//dummy byte(空比特、虚拟字节)，图片最终消失的置 (列)
+    
+    OLED_write_command(0x2F);    //开始滚动
+	return;
+
+vertical:
+	if (direction == 0) direction_command = 0x01;
+	else direction_command = 0x3f; 
+	OLED_write_command(0x2E); 	//先关闭滚动,
+
+	OLED_write_command(0x2A);    //垂直水平向左滚动(0x2A)，垂直水平向右滚动(0x29)
+	OLED_write_command(0x01);    //水平滚动关闭(0x00)、开启(0x01)，控制水平运动方法①
+
+	OLED_write_command(0x04);    // 起始页地址
+	OLED_write_command(0x05);    // 滚动时间的间隔                                                            
+	OLED_write_command(0x05);    // 终止页地址    
+ 
+	OLED_write_command(direction_command);    //垂直滚动偏移量                                          
+          
+	OLED_write_command(0x00);    //起始列地址，控制水平运动方法②
+	OLED_write_command(0x00);    //终止列的址
+    
+	OLED_write_command(0x2F);    // 开启滚动
+}
+
 /**
  * @brief 显示图片
  * @param 
