@@ -92,5 +92,7 @@ void main()
 	OLED_show_char_8x16(1, 8, 'r', ascill_zk);
 	OLED_show_char_8x16(1, 9, 'l', ascill_zk);
 	OLED_show_char_8x16(1, 10, 'd', ascill_zk);
+	OLED_roll(OLED_roll_right);
+	
 	while (1);
 }
