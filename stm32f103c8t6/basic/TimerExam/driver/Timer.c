@@ -1,7 +1,5 @@
 #include "stm32f10x.h"
 
-extern uint32_t num;
-
 void TIM2_Init()
 {
 	// 打开TIM2时钟
@@ -43,7 +41,6 @@ void TIM2_Init()
 void TIM2_IRQHandler(void)
 {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) == SET) {
-		num++;
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 	}
 }
