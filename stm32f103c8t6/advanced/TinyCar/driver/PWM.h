@@ -14,6 +14,6 @@
 #include "stm32f10x.h"
 
 void PWMTIM3_init();
-void PWMTIM3_set_compare(uint16_t CCRx, uint16_t compare);
+void PWMTIM3_set_compare(uint8_t CCRx, uint16_t compare);
 void PWNTIM3_set_psc(uint16_t psc);
 #endif

@@ -1,7 +1,7 @@
 /**
  * @file PWM.c
  * @author Unique9
- * @brief TIM3_CH1输出PWM波形, PA6
+ * @brief TIM3_CH1和TIM3_CH2输出 1kHZ PWM波形, PA6, PA7
  * @version 0.1
  * @date 2025-10-17
  * 
@@ -26,7 +26,7 @@ void PWMTIM3_init()
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 	GPIO_InitTypeDef GPIO_initstructure;
 	GPIO_initstructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_initstructure.GPIO_Pin = GPIO_Pin_6;
+	GPIO_initstructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
 	GPIO_initstructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIO_initstructure);
 	
@@ -41,21 +41,21 @@ void PWMTIM3_init()
 	
 	// 初始输出比较单元
 	TIM_OCInitTypeDef TIM_OCInitStructure;
-	TIM_OCStructInit(&TIM_OCInitStructure);							// 虽然有些字段用不上, 但是还是要赋初值, 毕竟是局部变量
+	TIM_OCStructInit(&TIM_OCInitStructure);							// 虽然有些字段用不上, 但是还是要赋一个默认的初值
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;				// 输出比较模式
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;		// 有效电平为高电平
 	TIM_OCInitStructure.TIM_Pulse = 0;								// 此即CCR
-	TIM_OC1Init(TIM3, &TIM_OCInitStructure);		// PA6
+	TIM_OC1Init(TIM3, &TIM_OCInitStructure);		// 输出两路PWM波形
+	TIM_OC2Init(TIM3, &TIM_OCInitStructure);
 
-	
 	// TIM3使能
 	TIM_Cmd(TIM3, ENABLE);
 
 }
 
 // 更改CCR以改变占空比
-void PWMTIM3_set_compare(uint16_t CCRx, uint16_t compare)
+void PWMTIM3_set_compare(uint8_t CCRx, uint16_t compare)
 {
 	if (CCRx == 1) {
 		TIM_SetCompare1(TIM3, compare); 
