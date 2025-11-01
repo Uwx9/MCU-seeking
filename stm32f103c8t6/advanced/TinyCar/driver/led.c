@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2025
  * 
  */
-#include "../user/stm32f10x_it.h"
+#include "stm32f10x.h" 
 
 /* 这里只初始化PA0和PA1 */
 void led_init()

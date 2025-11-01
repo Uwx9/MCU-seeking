@@ -2,6 +2,7 @@
 #include "../driver/OLED.h"
 #include "stdarg.h"
 #include "stdio.h"
+#include "stdbool.h"
 
 uint8_t TXpkg[4];
 char RXpkg[100];
@@ -164,13 +165,13 @@ void USART1_IRQHandler(void)
 	}
 }
 
-uint8_t get_usart_flag()
+bool get_usart_flag()
 {
 	if (rx_flag == 1) {
 		rx_flag = 0;
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 /**

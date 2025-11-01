@@ -9,11 +9,13 @@ enum CAR_SPEED {
 };
 
 void car_init();
-void car_reset_speed(enum CAR_SPEED _CarSpeed);
-void car_turnleft();
-void car_stop_trunleft();
-void car_turn_right();
-void car_stop_trunleft();
-
+void car_stop();
+void car_move_forward();
+void car_move_backward();
+void car_left_reversal();
+void car_right_reversal();
+void car_speed_up();
+void car_speed_down();
+void car_show_status();
 
 #endif
