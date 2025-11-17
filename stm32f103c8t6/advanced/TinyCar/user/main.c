@@ -9,6 +9,7 @@ int main(void)
 	OLED_Init();
 	car_init();
 	MyUSART_init();
+	OLED_ShowString(1,1,"hello");
 	while (1) {
 		if (get_usart_flag()) {
 			if (strcmp(RXpkg, "car_forward") == 0) {
